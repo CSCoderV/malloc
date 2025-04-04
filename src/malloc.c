@@ -250,10 +250,31 @@ void free(void *ptr)
    struct _block *curr = BLOCK_HEADER(ptr);
    assert(curr->free == 0);
    curr->free = true;
-
+   nums_frees++; 
    /* TODO: Coalesce free _blocks.  If the next block or previous block 
             are free then combine them with this block being freed.
    */
+   if (curr->next && curr->next->free) 
+   {
+      curr->size += sizeof(struct _block) + curr->next->size;
+      curr->next = curr->next->next;
+      num_coalesces++;
+      num_blocks--;
+   }
+   struct _block *prev = NULL;
+   struct _block *curr = heapList;
+   while (iter && iter !=curr){
+      if (iter->free)
+         prev = iter;
+      iter = iter->next;
+   }
+   if (prev && prev->free){
+      prev->size+= sizeof(struct _block)+curr->size;
+      prev->next= curr->next;
+      num_coalesces++;
+      num_blocks--;
+   }
+   
 }
 
 void *calloc( size_t nmemb, size_t size )
