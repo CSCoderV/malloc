@@ -201,6 +201,8 @@ void *malloc(size_t size)
    if (next == NULL) 
    {
       next = growHeap(last, size);
+      num_grows++;
+      num_blocks++;
    }
 
    /* Could not find free _block or grow heap, so just return NULL */
@@ -208,7 +210,18 @@ void *malloc(size_t size)
    {
       return NULL;
    }
-   
+   if (next->size>=size + sizeof(struct_block)+4){
+      struct_bock *old_next= next->next;
+      size_t old_size=next->size;
+      struct _block *newbloock = (struct _block *)((char *)BLOCK_DATA(next)+size);
+      new_block->size=old_size-size-sizeof(struct _block);
+      new_block->next=old_next;
+      new_block->free=true;
+      new_bloock->size=size;
+      next->next=new_block;
+      num_splits++;
+      num_blocks++;
+   }
    /* Mark _block as in use */
    next->free = false;
 
