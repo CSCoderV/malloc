@@ -68,6 +68,7 @@ struct _block *heapList = NULL; /* Free list to track the _blocks available */
  * \TODO Implement Best Fit
  * \TODO Implement Worst Fit
  */
+
 struct _block *findFreeBlock(struct _block **last, size_t size) 
 {
    struct _block *curr = heapList;
@@ -92,19 +93,57 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Best Fit code in this #ifdef block
 #if defined BEST && BEST == 0
    /** \TODO Implement best fit here */
+   struct _block*best_ptr= NULL;
+   while (curr){ 
+      if (curr->free && curr->size>=size){
+         if (curr->size <best_ptr->size || best_ptr==NULL){
+            best_ptr=curr;
+         }
+         *last=curr;
+         curr=curr->next;
+      }
+      curr=best;
+      if (curr)
+         num_reuses++;
+   }
 #endif
 
 // \TODO Put your Worst Fit code in this #ifdef block
 #if defined WORST && WORST == 0
    /** \TODO Implement worst fit here */
+   struct _block*worst_ptr= NULL;
+   while (curr){    
+      if (curr->free && curr->size>=size){
+         if (!worst || curr->size>worst->size)
+            worst= curr;  
+      }
+      *last=curr;
+      curr=curr->next;
+   }
+   curr=worst;
+   if (curr)
+      num_reuses++;
 #endif
 
 // \TODO Put your Next Fit code in this #ifdef block
 #if defined NEXT && NEXT == 0
    /** \TODO Implement next fit here */
+   staticstruct _block *last_use=NULL;
+   if (!last_use)
+      last_use=heapList; 
+   while (last_use && (first_pass || last_use!=curr)){
+      if (last_use->free && last_use->size>=size){
+         curr=last_use;
+         num_reuses++;
+         break;
+      }
+      *last=last_use;
+      if (last_use->next)
+         last_use=last_use->next;
+      else
+         last_use=heapList;
+   }
 #endif
-
-   return curr;
 }
 
 /*
