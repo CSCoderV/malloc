@@ -280,12 +280,37 @@ void free(void *ptr)
 void *calloc( size_t nmemb, size_t size )
 {
    // \TODO Implement calloc
+   size_t total = nmemb * size;
+   void *ptr1 = malloc(total);
+   if (ptr) 
+   {
+      memset(ptr1, 0, total);
+   }
+   return ptr1;
    return NULL;
 }
 
-void *realloc( void *ptr, size_t size )
+void *realloc( void *ptr1, size_t size )
 {
    // \TODO Implement realloc
+   if (!ptr1)
+       return malloc(size);
+   if (size == 0) {
+       free(ptr1);
+       return NULL;
+   } 
+
+   struct _block*current= BLOCK_HEADER(ptr);
+   if (current->size >= size)
+       return ptr1;
+   else{
+       void *ptr2 = malloc(size);
+       if (ptr2) {
+           memcpy(ptr2, ptr1, current->size);
+           free(ptr2);
+           return ptr2;
+       }
+   }
    return NULL;
 }
 
