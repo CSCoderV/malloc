@@ -93,6 +93,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Best Fit code in this #ifdef block
 #if defined BEST && BEST == 0
    /** \TODO Implement best fit here */
+
    struct _block*best_ptr= NULL;
    while (curr){ 
       if (curr->free && curr->size>=size){
@@ -102,7 +103,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
          *last=curr;
          curr=curr->next;
       }
-      curr=best;
+      curr=best_ptr;
       if (curr)
          num_reuses++;
    }
@@ -114,8 +115,8 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
    struct _block*worst_ptr= NULL;
    while (curr){    
       if (curr->free && curr->size>=size){
-         if (!worst || curr->size>worst->size)
-            worst= curr;  
+         if (!worst_ptr || curr->size>worst->size)
+            worst_ptr= curr;  
       }
       *last=curr;
       curr=curr->next;
