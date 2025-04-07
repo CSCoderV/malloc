@@ -115,13 +115,13 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
    struct _block*worst_ptr= NULL;
    while (curr){    
       if (curr->free && curr->size>=size){
-         if (!worst_ptr || curr->size>worst->size)
+         if (!worst_ptr || curr->size>worst_ptr->size)
             worst_ptr= curr;  
       }
       *last=curr;
       curr=curr->next;
    }
-   curr=worst;
+   curr=worst_ptr;
    if (curr)
       num_reuses++;
 #endif
