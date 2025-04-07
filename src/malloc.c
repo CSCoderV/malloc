@@ -128,10 +128,13 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Next Fit code in this #ifdef block
 #if defined NEXT && NEXT == 0
    /** \TODO Implement next fit here */
-   staticstruct _block *last_use=NULL;
+   static struct _block *last_use=NULL;
    if (!last_use)
       last_use=heapList; 
-   while (last_use && (first_pass || last_use!=curr)){
+   struct _block *start= last_use;
+   int first_pass=1;
+   while (last_use && (first_pass || last_use!=start)){
+      first_pass=0;
       if (last_use->free && last_use->size>=size){
          curr=last_use;
          num_reuses++;
@@ -144,6 +147,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
          last_use=heapList;
    }
 #endif
+return curr;
 }
 
 /*
@@ -249,14 +253,14 @@ void *malloc(size_t size)
    {
       return NULL;
    }
-   if (next->size>=size + sizeof(struct_block)+4){
-      struct_bock *old_next= next->next;
+   if (next->size>=size + sizeof(struct _block)+4){
+      struct _block *old_next= next->next;
       size_t old_size=next->size;
-      struct _block *newbloock = (struct _block *)((char *)BLOCK_DATA(next)+size);
+      struct _block *new_block = (struct _block *)((char *)BLOCK_DATA(next)+size);
       new_block->size=old_size-size-sizeof(struct _block);
       new_block->next=old_next;
       new_block->free=true;
-      new_bloock->size=size;
+      new_block->size=size;
       next->next=new_block;
       num_splits++;
       num_blocks++;
@@ -289,7 +293,7 @@ void free(void *ptr)
    struct _block *curr = BLOCK_HEADER(ptr);
    assert(curr->free == 0);
    curr->free = true;
-   nums_frees++; 
+   num_frees++; 
    /* TODO: Coalesce free _blocks.  If the next block or previous block 
             are free then combine them with this block being freed.
    */
@@ -301,7 +305,7 @@ void free(void *ptr)
       num_blocks--;
    }
    struct _block *prev = NULL;
-   struct _block *curr = heapList;
+   struct _block *iter = heapList;
    while (iter && iter !=curr){
       if (iter->free)
          prev = iter;
@@ -321,12 +325,11 @@ void *calloc( size_t nmemb, size_t size )
    // \TODO Implement calloc
    size_t total = nmemb * size;
    void *ptr1 = malloc(total);
-   if (ptr) 
+   if (ptr1) 
    {
       memset(ptr1, 0, total);
    }
    return ptr1;
-   return NULL;
 }
 
 void *realloc( void *ptr1, size_t size )
@@ -339,18 +342,15 @@ void *realloc( void *ptr1, size_t size )
        return NULL;
    } 
 
-   struct _block*current= BLOCK_HEADER(ptr);
+   struct _block*current= BLOCK_HEADER(ptr1);
    if (current->size >= size)
        return ptr1;
-   else{
-       void *ptr2 = malloc(size);
-       if (ptr2) {
-           memcpy(ptr2, ptr1, current->size);
-           free(ptr2);
-           return ptr2;
-       }
+   void *ptr2 = malloc(size);
+   if (ptr2){
+      memcpy(ptr2, ptr1, current->size);
+      return ptr1;
    }
-   return NULL;
+   return ptr2;
 }
 
 
