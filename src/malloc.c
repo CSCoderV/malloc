@@ -103,10 +103,10 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
          *last=curr;
          curr=curr->next;
       }
-      curr=best_ptr;
+   }
+   curr=best_ptr;
       if (curr)
          num_reuses++;
-   }
 #endif
 
 // \TODO Put your Worst Fit code in this #ifdef block
@@ -148,6 +148,12 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
          last_use=heapList;
    }
 #endif
+if (curr==NULL)
+   *last = last_use;
+if (curr)
+   last_use= curr->next;
+else
+   last_use=  *last;
 return curr;
 }
 
@@ -261,7 +267,7 @@ void *malloc(size_t size)
       new_block->size=old_size-size-sizeof(struct _block);
       new_block->next=old_next;
       new_block->free=true;
-      new_block->size=size;
+      next->size=size;
       next->next=new_block;
       num_splits++;
       num_blocks++;
@@ -349,7 +355,7 @@ void *realloc( void *ptr1, size_t size )
    void *ptr2 = malloc(size);
    if (ptr2){
       memcpy(ptr2, ptr1, current->size);
-      return ptr1;
+      return ptr2;
    }
    return ptr2;
    
