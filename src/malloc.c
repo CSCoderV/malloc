@@ -97,7 +97,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
    struct _block *best_ptr= NULL;
    while (curr){ 
       if (curr->free && curr->size>=size){
-         if (curr->size <best_ptr->size || !best_ptr){
+         if (!best_ptr ||curr->size <best_ptr->size ){
             best_ptr=curr;
          }
          *last=curr;
@@ -147,13 +147,14 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
       else
          last_use=heapList;
    }
+   if (curr==NULL)
+      *last = last_use;
+   if (curr)
+      last_use= curr->next;
+   else
+      last_use=  *last;
 #endif
-if (curr==NULL)
-   *last = last_use;
-if (curr)
-   last_use= curr->next;
-else
-   last_use=  *last;
+
 return curr;
 }
 
@@ -274,6 +275,11 @@ void *malloc(size_t size)
    }
    /* Mark _block as in use */
    next->free = false;
+   num_mallocs++;
+   num_requested+=size;
+   int heap_size=(char*) next + sizeof(struct _block)+ next->size- (char*) heapList;
+   if (heap_size> max_heap)
+      max_heap=heap_size;
 
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
@@ -355,9 +361,10 @@ void *realloc( void *ptr1, size_t size )
    void *ptr2 = malloc(size);
    if (ptr2){
       memcpy(ptr2, ptr1, current->size);
+      free(ptr1);
       return ptr2;
    }
-   return ptr2;
+   return NULL;
    
 }
 
